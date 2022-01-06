@@ -1,49 +1,84 @@
 package com.api.define;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.api.utility.Utility;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.specification.RequestSpecification;
 
-public abstract class ApiRequest extends RestAssured {
-	
-	public String base_uri ="";
-	
-	public String path = "";
+public abstract class ApiRequest  {
 	
 	public String pingpath = "";
-	
-	//public static RestAssured restassured;
-	
+		
 	public Utility utilities = new Utility();
 
-	
-	public void setBaseParams(String base_uri, String path, String pingpath) {
-
-		this.base_uri = base_uri;
-		this.path = path;
-		this.pingpath = pingpath;
-		
-		this.baseURI = this.base_uri;
-		this.basePath = this.path;
-		
-	}
+	public RequestSpecification requestSpecification;
 	
 	public boolean ping() {
 		return false;
 		
 	}
 	
-	public ApiRequest(){
-		String classname = this.getClass().getName().split("\\.")[1];
-		utilities.loadApiProperties(classname, Utility.frameworkproperties.getProperty("env"));
-		this.setBaseParams(utilities.apiproperties.getProperty("baseurl"), utilities.apiproperties.getProperty("path"), utilities.apiproperties.getProperty("pingpath"));
+	public void setBaseParams(JsonElement propertiesData) {
+		
+		RequestSpecBuilder builder = new RequestSpecBuilder();
+		
+		
+		this.pingpath = propertiesData.getAsJsonObject().get("pingpath").getAsString();
+		
+		JsonElement headerElement = propertiesData.getAsJsonObject().get("headers");
+		Map<String,String> headers = new HashMap<String,String>();
+		if(headerElement != null) {
+			JsonObject headerObject = headerElement.getAsJsonObject();
+			headerObject.keySet().stream().forEach( h->{
+				headers.put(h, headerObject.get(h).getAsString());
+			});
+			builder = builder.addHeaders(headers);
+		}
+		
+		
+		JsonElement baseUrlElement = propertiesData.getAsJsonObject().get("baseurl");
+		if(baseUrlElement != null) {
+			builder = builder.setBaseUri(baseUrlElement.getAsString());
+		}
+		
+		
+		JsonElement basePathElement = propertiesData.getAsJsonObject().get("path");
+		if(basePathElement != null) {
+			builder = builder.setBasePath(basePathElement.getAsString());
+		}
+		
+		JsonElement basePortElement = propertiesData.getAsJsonObject().get("port");
+		if(basePortElement != null) {
+			builder = builder.setPort(basePortElement.getAsInt());
+		}
+		
+		
+		
+		this.requestSpecification =builder.build();
+		
+		System.out.println("ReqSpecification is set");
+
 	}
 	
-	public void get(Map<String,?> allParam) {
+	public ApiRequest(String apiUnderTestname, String env){
+		String classname = apiUnderTestname;
+		utilities.loadApiProperties(classname, env);
+		this.setBaseParams(Utility.apiJsonProperties);
 		
 	}
+	
+	public RequestSpecification api() {
+		RestAssured.reset();
+		return RestAssured.given().spec(this.requestSpecification);
+	}
+	
+	
+	
+	
 }

@@ -3,6 +3,8 @@ package com.api.define.impl.request;
 import com.api.define.ApiRequest;
 import com.api.utility.ApiPingFailException;
 
+import io.restassured.RestAssured;
+
 public class GetRequest extends ApiRequest {
 
 	
@@ -11,15 +13,15 @@ public class GetRequest extends ApiRequest {
 		boolean returnval = false;
 		try {
 		
-		int status=this
+		int status=RestAssured.given().spec(this.requestSpecification)
 				.when()
-				.get("/" + this.pingpath)
+				.get(this.pingpath)
 				.andReturn()
 				.getStatusCode();
 		
 	
 		returnval = ((status == 200)) ? true: false;
-
+		System.out.println("Ping status received : " + status);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -29,13 +31,12 @@ public class GetRequest extends ApiRequest {
 		return returnval;
 	}
 	
-	public GetRequest() throws ApiPingFailException {
-	
-			if (ping() == false) {
-				throw new ApiPingFailException(this.baseURI + this.basePath + this.pingpath + " Failed to ping");
-			}
-	
-		
+
+	public GetRequest(String apiUnderTestname,String env) throws ApiPingFailException {
+		super(apiUnderTestname,env);
+		if (ping() == false) {
+			throw new ApiPingFailException(RestAssured.baseURI + ":" + RestAssured.port + RestAssured.basePath + this.pingpath);
+		}
 	}
 
 }
