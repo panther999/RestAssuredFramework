@@ -14,31 +14,15 @@ import com.google.gson.JsonParser;
 
 public class Utility {
 	
-	public static Properties frameworkproperties;
+
 	public static JsonElement mapDataJsonElement;
 	public static JsonElement mapApiUnderTestDataJsonElement;
 	public static JsonObject apiJsonProperties;
 	
-	static {
-		loadFramework();
-		loadapijsonmap();
-		
-	}
-	private static void loadFramework() {
-	//read framework.properties
-		InputStream frameworkStream = Utility.class.getClass().getResourceAsStream("/framework.properties");
-		frameworkproperties = new Properties();
-		try {
-			frameworkproperties.load(frameworkStream);
-			frameworkStream.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	
-	}
 	
-	private static void loadapijsonmap() {
+	
+	public static void loadapijsonmap() {
 		InputStream mapApiUnderTestStream = Utility.class.getClass().getResourceAsStream("/api-under-test-map.json");
 		BufferedReader brApiUnderTest = new BufferedReader(new InputStreamReader(mapApiUnderTestStream));
 		String mapApiUnderTestData = brApiUnderTest.lines().collect(Collectors.joining("\n"));

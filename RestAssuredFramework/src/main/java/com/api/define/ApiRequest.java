@@ -3,12 +3,15 @@ package com.api.define;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.api.utility.RestAssuredRequestFilter;
 import com.api.utility.Utility;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.LogConfig;
+import io.restassured.specification.RequestSender;
 import io.restassured.specification.RequestSpecification;
 
 public abstract class ApiRequest  {
@@ -19,6 +22,9 @@ public abstract class ApiRequest  {
 
 	public RequestSpecification requestSpecification;
 	
+	
+	
+
 	public boolean ping() {
 		return false;
 		
@@ -60,8 +66,9 @@ public abstract class ApiRequest  {
 		
 		
 		
-		this.requestSpecification =builder.build();
 		
+		
+		this.requestSpecification =builder.build();
 		System.out.println("ReqSpecification is set");
 
 	}
@@ -75,8 +82,10 @@ public abstract class ApiRequest  {
 	
 	public RequestSpecification api() {
 		RestAssured.reset();
-		return RestAssured.given().spec(this.requestSpecification);
+		return RestAssured.given().filter(new RestAssuredRequestFilter()).spec(this.requestSpecification);
 	}
+	
+	
 	
 	
 	
